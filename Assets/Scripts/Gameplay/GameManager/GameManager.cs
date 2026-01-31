@@ -162,19 +162,8 @@ namespace Unity.FPSSample_2
             else if (creationType == CreationType.ConnectAndJoin)
             {
                 GameSettings.Instance.CancellableUserInputPopUp = new AwaitableCompletionSource();
-                GameSettings.Instance.MainMenuState = MainMenuState.DirectConnectPopUp;
-                try
-                {
-                    await GameSettings.Instance.CancellableUserInputPopUp.Awaitable;
-                }
-                catch (OperationCanceledException)
-                {
-                    return;
-                }
-                finally
-                {
-                    GameSettings.Instance.MainMenuState = MainMenuState.MainMenuScreen;
-                }
+                GameSettings.Instance.MainMenuState = MainMenuState.MainMenuScreen;
+                GameSettings.Instance.CancellableUserInputPopUp.SetResult();
             }
 
             BeginEnteringGame();
