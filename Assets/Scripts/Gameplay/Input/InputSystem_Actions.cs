@@ -1219,6 +1219,15 @@ namespace Unity.FPSSample_2
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": true
+                },
+                {
+                    ""name"": ""PickUp"",
+                    ""type"": ""Button"",
+                    ""id"": ""7bfcedc1-07e1-4972-8908-ec9a6b5a3fae"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -1283,7 +1292,7 @@ namespace Unity.FPSSample_2
                     ""path"": ""<Gamepad>/leftStick"",
                     ""interactions"": """",
                     ""processors"": """",
-                    ""groups"": "";Gamepad"",
+                    ""groups"": """",
                     ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
@@ -1386,6 +1395,17 @@ namespace Unity.FPSSample_2
                     ""action"": ""Move"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""d435e324-e41f-479d-921d-46b501e8909b"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""PickUp"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -1487,6 +1507,7 @@ namespace Unity.FPSSample_2
             m_FPS_Reload = m_FPS.FindAction("Reload", throwIfNotFound: true);
             m_FPS_Jump = m_FPS.FindAction("Jump", throwIfNotFound: true);
             m_FPS_Move = m_FPS.FindAction("Move", throwIfNotFound: true);
+            m_FPS_PickUp = m_FPS.FindAction("PickUp", throwIfNotFound: true);
         }
 
         ~@InputSystem_Actions()
@@ -1987,6 +2008,7 @@ namespace Unity.FPSSample_2
         private readonly InputAction m_FPS_Reload;
         private readonly InputAction m_FPS_Jump;
         private readonly InputAction m_FPS_Move;
+        private readonly InputAction m_FPS_PickUp;
         /// <summary>
         /// Provides access to input actions defined in input action map "FPS".
         /// </summary>
@@ -2022,6 +2044,10 @@ namespace Unity.FPSSample_2
             /// Provides access to the underlying input action "FPS/Move".
             /// </summary>
             public InputAction @Move => m_Wrapper.m_FPS_Move;
+            /// <summary>
+            /// Provides access to the underlying input action "FPS/PickUp".
+            /// </summary>
+            public InputAction @PickUp => m_Wrapper.m_FPS_PickUp;
             /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
@@ -2066,6 +2092,9 @@ namespace Unity.FPSSample_2
                 @Move.started += instance.OnMove;
                 @Move.performed += instance.OnMove;
                 @Move.canceled += instance.OnMove;
+                @PickUp.started += instance.OnPickUp;
+                @PickUp.performed += instance.OnPickUp;
+                @PickUp.canceled += instance.OnPickUp;
             }
 
             /// <summary>
@@ -2095,6 +2124,9 @@ namespace Unity.FPSSample_2
                 @Move.started -= instance.OnMove;
                 @Move.performed -= instance.OnMove;
                 @Move.canceled -= instance.OnMove;
+                @PickUp.started -= instance.OnPickUp;
+                @PickUp.performed -= instance.OnPickUp;
+                @PickUp.canceled -= instance.OnPickUp;
             }
 
             /// <summary>
@@ -2412,6 +2444,13 @@ namespace Unity.FPSSample_2
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnMove(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "PickUp" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnPickUp(InputAction.CallbackContext context);
         }
     }
 }

@@ -23,6 +23,11 @@ namespace Unity.FPSSample_2
         [field: FormerlySerializedAs("<VisualShotOrigin>k__BackingField")] [field: SerializeField] 
         public Transform VisualShotOrigin1P { get; private set; }
         [field: SerializeField] public Transform VisualShotOrigin3P { get; private set; }
+        [field: SerializeField] public Transform HoldPoint { get; private set; }
+        private Rigidbody _heldObjectBody;
+        private Transform _heldObjectOriginalParent;
+        private bool _heldObjectKinematic;
+        private CollisionDetectionMode _heldObjectCdm;
 
         [Header("Manual Aiming Setup")]
         [SerializeField] private Animator m_Animator3P;
@@ -89,6 +94,65 @@ namespace Unity.FPSSample_2
             GetRequiredComponent(out m_Controller);
             m_ReticleVector = ReticlePoint.localPosition;
         }
+
+        public void HoldTick(bool holdPressed, Vector3 rayOrigin, Vector3 rayDir, float grabRange, int layerMask)
+        {
+            if (!holdPressed)
+            {
+                if (_heldObjectBody != null) ReleaseHeldObject();
+                return;
+            }
+
+            if (_heldObjectBody == null)
+            {
+                TryGrab(rayOrigin, rayDir, grabRange, layerMask);
+            }
+        }
+
+         void TryGrab(Vector3 rayOrigin, Vector3 rayDir, float grabRange, int layerMask)
+        {
+            if (HoldPoint == null) return;
+
+            if (UnityEngine.Physics.Raycast(rayOrigin, rayDir, out UnityEngine.RaycastHit hit, grabRange, layerMask))
+            {
+                var rb = hit.rigidbody;
+                if (rb == null) return;
+
+                _heldObjectBody = rb;
+                _heldObjectOriginalParent = rb.transform.parent;
+                _heldObjectKinematic = rb.isKinematic;
+                _heldObjectCdm = rb.collisionDetectionMode;
+
+                if (!rb.CompareTag("Pickable")) return;
+
+                rb.isKinematic = true;
+                rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+                rb.transform.SetParent(HoldPoint, worldPositionStays: true);
+                rb.transform.localPosition = Vector3.zero;
+                rb.transform.localRotation = Quaternion.identity;
+            }
+        }
+
+        private void UpdateHeldTransform()
+        {
+            if (HoldPoint == null || _heldObjectBody == null) return;
+
+            _heldObjectBody.transform.position = HoldPoint.position;
+            _heldObjectBody.transform.rotation = HoldPoint.rotation;
+        }
+
+        private void ReleaseHeldObject()
+        {
+            if (_heldObjectBody == null) return;
+
+            _heldObjectBody.transform.SetParent(_heldObjectOriginalParent, worldPositionStays: true);
+            _heldObjectBody.isKinematic = _heldObjectKinematic;
+            _heldObjectBody.collisionDetectionMode = _heldObjectCdm;
+
+            _heldObjectBody = null;
+            _heldObjectOriginalParent = null;
+        }
         
         private void LateUpdate()
         {
@@ -100,10 +164,10 @@ namespace Unity.FPSSample_2
 
             var predictedPlayerGhost = ReadGhostComponentData<PredictedPlayerGhost>();
             var controllerState = predictedPlayerGhost.ControllerState;
-            
+
             // matches vertical angle value in ClientInputReaderSystem
             float normalizedPitch = controllerState.PitchDegrees / 85f;
-            
+
             m_Animator3P.SetFloat(AimPitchHash, normalizedPitch);
         }
 

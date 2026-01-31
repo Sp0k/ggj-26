@@ -206,83 +206,106 @@ public partial class PlayerPredictionSystem : SingletonSystem<PlayerPredictionSy
                         var weaponData = WeaponManager.Instance.WeaponRegistry.GetWeaponData(predictedPlayer.ValueRO.EquippedWeaponID);
                         if (weaponData != null)
                         {
-                            bool wantsToReload = input.Reload;
-                            bool wantsToShoot = input.Shoot;
-                            bool mustReload = wantsToShoot && predictedPlayer.ValueRO.CurrentAmmo <= 0;
-
-                            if ((wantsToReload || mustReload) &&
-                                !predictedPlayer.ValueRO.ControllerState.IsReloadingState &&
-                                predictedPlayer.ValueRO.CurrentAmmo < weaponData.MagazineSize)
+                            bool wantsToHold = input.Shoot;
+                            var playerGhost = controllerLink.Controller.GetComponent<PlayerGhost>();
+                            if (playerGhost != null)
                             {
-                                predictedPlayer.ValueRW.ControllerState.IsReloadingState = true;
-                                predictedPlayer.ValueRW.ReloadTimer = weaponData.ReloadTime;
-                                predictedPlayer.ValueRW.LastReloadTick = commandInput.Tick.TickIndexForValidTick;
-                            }
-                            
-                            if (wantsToShoot && !predictedPlayer.ValueRO.ControllerState.IsReloadingState && predictedPlayer.ValueRO.CurrentAmmo > 0 && predictedPlayer.ValueRO.WeaponCooldown >= weaponData.CooldownInMs)
-                            {
-                                predictedPlayer.ValueRW.WeaponCooldown = 0f;
-                                predictedPlayer.ValueRW.CurrentAmmo--;
-                                predictedPlayer.ValueRW.LastShotTick = commandInput.Tick.TickIndexForValidTick;
-
-                                var playerGhost = controllerLink.Controller.GetComponent<PlayerGhost>();
                                 var controllerState = predictedPlayer.ValueRO.ControllerState;
+
+                                // Same aim math your shooting code used:
                                 var aimRotation = quaternion.Euler(
                                     math.radians(controllerState.PitchDegrees),
                                     math.radians(controllerState.YawDegrees),
                                     0f);
 
                                 float3 eyePosition = playerGhost.CameraTarget.position;
-                                var aimDirection = math.mul(aimRotation, new float3(0, 0, 1));
-                                var shotOriginPosition = playerGhost.VisualShotOrigin1P.position;
-                                    
-                                if (VisualEffectManager.ClientInstance != null)
-                                {
-                                    VisualEffectManager.ClientInstance.SpawnMuzzleFlash(playerGhost, predictedPlayer.ValueRO.EquippedWeaponID, true);
-                                }
+                                float3 aimDirection = math.mul(aimRotation, new float3(0, 0, 1));
 
-                                if (weaponData.Type == WeaponType.Hitscan)
-                                {
-                                    if (Physics.Raycast(eyePosition, aimDirection, out RaycastHit cosmeticHit,
-                                        weaponData.HitscanRange, s_HitscanLayerMask))
-                                    {
-                                        Debug.DrawLine(shotOriginPosition, cosmeticHit.point, Color.yellow, 0.3f);
-                                    }
-                                    else
-                                    {
-                                        Vector3 endPoint = eyePosition + aimDirection * weaponData.HitscanRange;
-                                        Debug.DrawLine(shotOriginPosition, endPoint, Color.cyan, 0.3f);
-                                    }
-                                }
-                                else if (weaponData.Type == WeaponType.Projectile)
-                                {
-                                    Vector3 targetPoint;
-                                    if (Physics.Raycast(eyePosition, aimDirection, out RaycastHit aimHit, 1000f, s_ProjectileTargetLayerMask))
-                                    {
-                                        targetPoint = aimHit.point;
-                                    }
-                                    else
-                                    {
-                                        targetPoint = eyePosition + 1000f * aimDirection;
-                                    }
-
-                                    var directionToTarget = (targetPoint - shotOriginPosition).normalized;
-                                    var spawnRotation = Quaternion.LookRotation(directionToTarget);
-
-                                    controllerLink.Controller.SpawnPredictedProjectile(
-                                        commandInput.Tick.TickIndexForValidTick,
-                                        predictedPlayer.ValueRO.EquippedWeaponID,
-                                        shotOriginPosition,
-                                        spawnRotation);
-                                }
+                                // Call HoldTick (option A uses input.Shoot)
+                                playerGhost.HoldTick(
+                                    wantsToHold,
+                                    (Vector3)eyePosition,
+                                    (Vector3)aimDirection,
+                                    grabRange: 3.0f,
+                                    layerMask: ~LayerMask.GetMask("ClientPlayer", "ServerPlayer") // avoid grabbing players
+                                );
                             }
+
+                            // bool mustReload = wantsToShoot && predictedPlayer.ValueRO.CurrentAmmo <= 0;
+
+                            // if ((wantsToReload || mustReload) &&
+                            //     !predictedPlayer.ValueRO.ControllerState.IsReloadingState &&
+                            //     predictedPlayer.ValueRO.CurrentAmmo < weaponData.MagazineSize)
+                            // {
+                            //     predictedPlayer.ValueRW.ControllerState.IsReloadingState = true;
+                            //     predictedPlayer.ValueRW.ReloadTimer = weaponData.ReloadTime;
+                            //     predictedPlayer.ValueRW.LastReloadTick = commandInput.Tick.TickIndexForValidTick;
+                            // }
+
+                            // if (wantsToShoot && !predictedPlayer.ValueRO.ControllerState.IsReloadingState && predictedPlayer.ValueRO.CurrentAmmo > 0 && predictedPlayer.ValueRO.WeaponCooldown >= weaponData.CooldownInMs)
+                            // {
+                            //     predictedPlayer.ValueRW.WeaponCooldown = 0f;
+                            //     predictedPlayer.ValueRW.CurrentAmmo--;
+                            //     predictedPlayer.ValueRW.LastShotTick = commandInput.Tick.TickIndexForValidTick;
+
+                            //     var playerGhost = controllerLink.Controller.GetComponent<PlayerGhost>();
+                            //     var controllerState = predictedPlayer.ValueRO.ControllerState;
+                            //     var aimRotation = quaternion.Euler(
+                            //         math.radians(controllerState.PitchDegrees),
+                            //         math.radians(controllerState.YawDegrees),
+                            //         0f);
+
+                            //     float3 eyePosition = playerGhost.CameraTarget.position;
+                            //     var aimDirection = math.mul(aimRotation, new float3(0, 0, 1));
+                            //     var shotOriginPosition = playerGhost.VisualShotOrigin1P.position;
+
+                            //     if (VisualEffectManager.ClientInstance != null)
+                            //     {
+                            //         VisualEffectManager.ClientInstance.SpawnMuzzleFlash(playerGhost, predictedPlayer.ValueRO.EquippedWeaponID, true);
+                            //     }
+
+                            //     if (weaponData.Type == WeaponType.Hitscan)
+                            //     {
+                            //         if (Physics.Raycast(eyePosition, aimDirection, out RaycastHit cosmeticHit,
+                            //             weaponData.HitscanRange, s_HitscanLayerMask))
+                            //         {
+                            //             Debug.DrawLine(shotOriginPosition, cosmeticHit.point, Color.yellow, 0.3f);
+                            //         }
+                            //         else
+                            //         {
+                            //             Vector3 endPoint = eyePosition + aimDirection * weaponData.HitscanRange;
+                            //             Debug.DrawLine(shotOriginPosition, endPoint, Color.cyan, 0.3f);
+                            //         }
+                            //     }
+                            //     else if (weaponData.Type == WeaponType.Projectile)
+                            //     {
+                            //         Vector3 targetPoint;
+                            //         if (Physics.Raycast(eyePosition, aimDirection, out RaycastHit aimHit, 1000f, s_ProjectileTargetLayerMask))
+                            //         {
+                            //             targetPoint = aimHit.point;
+                            //         }
+                            //         else
+                            //         {
+                            //             targetPoint = eyePosition + 1000f * aimDirection;
+                            //         }
+
+                            //         var directionToTarget = (targetPoint - shotOriginPosition).normalized;
+                            //         var spawnRotation = Quaternion.LookRotation(directionToTarget);
+
+                            //         controllerLink.Controller.SpawnPredictedProjectile(
+                            //             commandInput.Tick.TickIndexForValidTick,
+                            //             predictedPlayer.ValueRO.EquippedWeaponID,
+                            //             shotOriginPosition,
+                            //             spawnRotation);
+                            //     }
+                            // }
 
                             FirstPersonController.ProcessInputs(ref predictedPlayer.ValueRW.ControllerState, input, accumulateDT);
                             FirstPersonController.AccumulateMovement(ref predictedPlayer.ValueRW.ControllerState,
                                 ref predictedPlayer.ValueRW.AccumulatedMovement,
                                 input,
                                 controllerConsts.ValueRO.ControllerConsts, accumulateDT);
-                            
+
                             if (predictedPlayer.ValueRW.ControllerState.JumpTriggered)
                             {
                                 predictedPlayer.ValueRW.LastJumpTick = commandInput.Tick.TickIndexForValidTick;
@@ -312,7 +335,7 @@ public partial class PlayerPredictionSystem : SingletonSystem<PlayerPredictionSy
 
         bool checkForPredictionErrors = CheckForPredictionErrors.IsEnabled;
         var predictedPlayerGhostStatesBufferLookup = SystemAPI.GetBufferLookup<PredictedPlayerGhostState>(true);
-        
+
         foreach (var (predictedPlayer,
                      transform,
                      playerControllerConsts,
@@ -320,13 +343,13 @@ public partial class PlayerPredictionSystem : SingletonSystem<PlayerPredictionSy
                  in SystemAPI.Query<
                          RefRW<PredictedPlayerGhost>,
                          RefRO<LocalTransform>,
-                         RefRO<PredictedPlayerControllerConsts>>() 
+                         RefRO<PredictedPlayerControllerConsts>>()
                      .WithAll<PlayerControllerLink>().WithEntityAccess())
         {
             var controllerLink = SystemAPI.ManagedAPI.GetComponent<PlayerControllerLink>(entity);
             var controllerConsts = playerControllerConsts.ValueRO.ControllerConsts;
             var predictedPlayerGhostStates = predictedPlayerGhostStatesBufferLookup[entity];
-            
+
             if (isFinalPredictionTick || predictedPlayer.ValueRO.RequestApplyMovement)
             {
                 if (math.lengthsq(predictedPlayer.ValueRO.AccumulatedMovement) > 0f)
@@ -378,7 +401,7 @@ public partial class PlayerPredictionSystem : SingletonSystem<PlayerPredictionSy
 
         ecb.Playback(EntityManager);
     }
-    
+
     [FeatureToggle(Name = "prediction_enabletickbatching", Default = false)]
     private static readonly FeatureToggle EnableTickBatching;
 

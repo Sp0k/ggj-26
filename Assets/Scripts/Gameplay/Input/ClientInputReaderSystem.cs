@@ -102,6 +102,7 @@ public partial class ClientInputReaderSystem : SystemBase
     {
         playerInput.SetFlag(PlayerInput.InputFlag.Jump, controls.Player.Jump.triggered);
         playerInput.SetFlag(PlayerInput.InputFlag.Shoot, controls.FPS.ShootSingle.IsPressed());
+        playerInput.SetFlag(PlayerInput.InputFlag.PickUp, controls.FPS.PickUp.triggered);
         playerInput.SetFlag(PlayerInput.InputFlag.Reload, controls.FPS.Reload.triggered);
     }
 }
