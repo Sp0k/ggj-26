@@ -1,0 +1,9 @@
+<!-- Example UI Toolkit UXML snippet for the Mask Counter -->
+<!-- Add this to your existing InGameHUD UXML file -->
+
+<ui:VisualElement name="mask-counter-container" style="position: absolute; top: 20px; right: 20px; flex-direction: row; align-items: center;">
+    <ui:Label name="mask-count-label" text="Masks: 0/0" style="font-size: 28px; color: rgb(255, 255, 255); -unity-font-style: bold; -unity-text-outline-width: 1px; -unity-text-outline-color: rgb(0, 0, 0);" />
+</ui:VisualElement>
+
+<!-- Alternative: Simple version -->
+<ui:Label name="mask-count-label" text="Masks: 0/0" style="position: absolute; top: 20px; right: 20px; font-size: 28px; color: white; -unity-font-style: bold;" />

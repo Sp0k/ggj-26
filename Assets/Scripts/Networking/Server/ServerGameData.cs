@@ -42,4 +42,14 @@ namespace Unity.FPSSample_2
         /// <summary>If != default, need to remap this to the entity.</summary>
         public NetworkId OwnerNetworkId;
     }
+
+    /// <summary>
+    /// Component to track collected masks (replicated to clients)
+    /// </summary>
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+    public struct PlayerMaskInventory : IComponentData
+    {
+        [GhostField] public int MaskCount;
+        [GhostField] public int TotalMasksInLevel;
+    }
 }

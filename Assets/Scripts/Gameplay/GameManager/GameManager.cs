@@ -9,6 +9,9 @@ using Unity.NetCode;
 using Unity.Services.Multiplayer;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections.Generic;
+
+// using Mask; 
 
 namespace Unity.FPSSample_2
 {
@@ -38,6 +41,8 @@ namespace Unity.FPSSample_2
         public bool IsHeadless => m_IsHeadless;
 
         public static bool CanUseMainMenu => SceneManager.GetActiveScene().name == MainMenuSceneName;
+
+        public List<Mask> MaskList { get; set; } = new List<Mask>();
 
         private void Awake()
         {

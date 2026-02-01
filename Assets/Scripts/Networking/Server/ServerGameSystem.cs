@@ -222,6 +222,13 @@ namespace Unity.FPSSample_2
             ecb.AddComponent(playerEntity, new PlayerCharacterInitialized());
             ecb.SetComponentEnabled<PlayerCharacterInitialized>(playerEntity, false);
 
+            // Add mask inventory component
+            ecb.AddComponent(playerEntity, new PlayerMaskInventory
+            {
+                MaskCount = 0,
+                TotalMasksInLevel = 0
+            });
+
             if (FindSpawnPoint(ref state, out var spawnPoint))
             {
                 ecb.SetComponent(playerEntity, new LocalTransform { Position = spawnPoint.Position, Rotation = spawnPoint.Rotation, Scale = 1.0f });

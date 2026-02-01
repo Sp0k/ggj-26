@@ -19,6 +19,7 @@ namespace Unity.FPSSample_2
         private Label m_AmmoLabel;
         private Label m_ReloadingLabel;
         private VisualElement m_Reticle;
+        private Label m_MaskCountLabel;
 
         // UI-side timer to ensure shot feedback is visible for a minimum duration.
         private float m_shotFeedbackTimer = 0f;
@@ -51,6 +52,7 @@ namespace Unity.FPSSample_2
             m_AmmoBar = m_RootElement.Q<ProgressBar>("player-ammo-bar");
             m_ReloadingLabel = m_RootElement.Q<Label>("reloading-label");
             m_Reticle = m_RootElement.Q<VisualElement>("player-reticle");
+            m_MaskCountLabel = m_RootElement.Q<Label>("mask-count-label");
         }
 
         private void InitializeEcs()
@@ -141,8 +143,35 @@ namespace Unity.FPSSample_2
                     playerData.ControllerState.IsReloadingState ? DisplayStyle.Flex : DisplayStyle.None;
             }
 
+            // Update Mask Counter
+            UpdateMaskCounter();
+
             // Update Reticle
             UpdateReticleVisual(playerData);
+        }
+
+        private void UpdateMaskCounter()
+        {
+            if (m_MaskCountLabel == null || m_EntityManager == null)
+                return;
+
+            // Try to get the local player's mask inventory
+            if (!m_LocalPlayerQuery.HasSingleton<PredictedPlayerGhost>())
+                return;
+
+            Entity localPlayerEntity = m_LocalPlayerQuery.GetSingletonEntity();
+
+            // Check if the player entity has a mask inventory component
+            if (m_EntityManager.HasComponent<PlayerMaskInventory>(localPlayerEntity))
+            {
+                var maskInventory = m_EntityManager.GetComponentData<PlayerMaskInventory>(localPlayerEntity);
+                m_MaskCountLabel.text = $"Masks: {maskInventory.MaskCount}/{maskInventory.TotalMasksInLevel}";
+                m_MaskCountLabel.style.display = DisplayStyle.Flex;
+            }
+            else
+            {
+                m_MaskCountLabel.style.display = DisplayStyle.None;
+            }
         }
 
         private void UpdateReticleVisual(PredictedPlayerGhost playerData)

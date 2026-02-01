@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public static class MaskDatabase
 {
     private static readonly Dictionary<MaskType, MaskData> Data = new()

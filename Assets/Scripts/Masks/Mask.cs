@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-
+// namespace Mask {
 public class Mask
 {
     public MaskType Type { get; private set; }
@@ -18,3 +18,4 @@ public class Mask
     // Factory method for common creation pattern
     public static Mask Create(MaskType type) => new Mask(type);
 }
+// }
