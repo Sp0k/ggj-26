@@ -7,6 +7,7 @@ using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 using Unity.FPSSample_2;
+using Unity.Entities.UniversalDelegates;
 
 [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
 [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
@@ -204,103 +205,93 @@ public partial class PlayerPredictionSystem : SingletonSystem<PlayerPredictionSy
                         predictedPlayer.ValueRW.LocalLookYawPitchDegrees = input.LookYawPitchDegrees;
 
                         var weaponData = WeaponManager.Instance.WeaponRegistry.GetWeaponData(predictedPlayer.ValueRO.EquippedWeaponID);
-                        if (weaponData != null)
+                        // if (weaponData != null)
                         {
-                            bool wantsToHold = input.Shoot;
-                            var playerGhost = controllerLink.Controller.GetComponent<PlayerGhost>();
-                            if (playerGhost != null)
+                            if (input.PickUp)
                             {
-                                var controllerState = predictedPlayer.ValueRO.ControllerState;
+                                var playerGhost = controllerLink.Controller.GetComponent<PlayerGhost>();
+                                playerGhost.TryGrab(playerGhost.CameraTarget.position, playerGhost.CameraTarget.forward, 3.0f);
+                                // UnityEngine.Physics.Raycast(playerGhost.CameraTarget.position, playerGhost.CameraTarget.forward, out RaycastHit hit);
 
-                                // Same aim math your shooting code used:
-                                var aimRotation = quaternion.Euler(
-                                    math.radians(controllerState.PitchDegrees),
-                                    math.radians(controllerState.YawDegrees),
-                                    0f);
-
-                                float3 eyePosition = playerGhost.CameraTarget.position;
-                                float3 aimDirection = math.mul(aimRotation, new float3(0, 0, 1));
-
-                                // Call HoldTick (option A uses input.Shoot)
-                                playerGhost.HoldTick(
-                                    wantsToHold,
-                                    (Vector3)eyePosition,
-                                    (Vector3)aimDirection,
-                                    grabRange: 3.0f,
-                                    layerMask: ~LayerMask.GetMask("ClientPlayer", "ServerPlayer") // avoid grabbing players
-                                );
+                                // if (hit.collider != null && playerGhost.)
+                                // {
+                                //     if (hit.collider.gameObject.CompareTag("Pickable"))
+                                //     {
+                                //         GameObject pickableObject = hit.collider.gameObject;
+                                //         UnityEngine.Debug.Log("Picked up: " + pickableObject.name);
+                                //     }
+                                //  }
                             }
-
                             // bool mustReload = wantsToShoot && predictedPlayer.ValueRO.CurrentAmmo <= 0;
 
-                            // if ((wantsToReload || mustReload) &&
-                            //     !predictedPlayer.ValueRO.ControllerState.IsReloadingState &&
-                            //     predictedPlayer.ValueRO.CurrentAmmo < weaponData.MagazineSize)
-                            // {
-                            //     predictedPlayer.ValueRW.ControllerState.IsReloadingState = true;
-                            //     predictedPlayer.ValueRW.ReloadTimer = weaponData.ReloadTime;
-                            //     predictedPlayer.ValueRW.LastReloadTick = commandInput.Tick.TickIndexForValidTick;
-                            // }
+                                // if ((wantsToReload || mustReload) &&
+                                //     !predictedPlayer.ValueRO.ControllerState.IsReloadingState &&
+                                //     predictedPlayer.ValueRO.CurrentAmmo < weaponData.MagazineSize)
+                                // {
+                                //     predictedPlayer.ValueRW.ControllerState.IsReloadingState = true;
+                                //     predictedPlayer.ValueRW.ReloadTimer = weaponData.ReloadTime;
+                                //     predictedPlayer.ValueRW.LastReloadTick = commandInput.Tick.TickIndexForValidTick;
+                                // }
 
-                            // if (wantsToShoot && !predictedPlayer.ValueRO.ControllerState.IsReloadingState && predictedPlayer.ValueRO.CurrentAmmo > 0 && predictedPlayer.ValueRO.WeaponCooldown >= weaponData.CooldownInMs)
-                            // {
-                            //     predictedPlayer.ValueRW.WeaponCooldown = 0f;
-                            //     predictedPlayer.ValueRW.CurrentAmmo--;
-                            //     predictedPlayer.ValueRW.LastShotTick = commandInput.Tick.TickIndexForValidTick;
+                                // if (wantsToShoot && !predictedPlayer.ValueRO.ControllerState.IsReloadingState && predictedPlayer.ValueRO.CurrentAmmo > 0 && predictedPlayer.ValueRO.WeaponCooldown >= weaponData.CooldownInMs)
+                                // {
+                                //     predictedPlayer.ValueRW.WeaponCooldown = 0f;
+                                //     predictedPlayer.ValueRW.CurrentAmmo--;
+                                //     predictedPlayer.ValueRW.LastShotTick = commandInput.Tick.TickIndexForValidTick;
 
-                            //     var playerGhost = controllerLink.Controller.GetComponent<PlayerGhost>();
-                            //     var controllerState = predictedPlayer.ValueRO.ControllerState;
-                            //     var aimRotation = quaternion.Euler(
-                            //         math.radians(controllerState.PitchDegrees),
-                            //         math.radians(controllerState.YawDegrees),
-                            //         0f);
+                                //     var playerGhost = controllerLink.Controller.GetComponent<PlayerGhost>();
+                                //     var controllerState = predictedPlayer.ValueRO.ControllerState;
+                                //     var aimRotation = quaternion.Euler(
+                                //         math.radians(controllerState.PitchDegrees),
+                                //         math.radians(controllerState.YawDegrees),
+                                //         0f);
 
-                            //     float3 eyePosition = playerGhost.CameraTarget.position;
-                            //     var aimDirection = math.mul(aimRotation, new float3(0, 0, 1));
-                            //     var shotOriginPosition = playerGhost.VisualShotOrigin1P.position;
+                                //     float3 eyePosition = playerGhost.CameraTarget.position;
+                                //     var aimDirection = math.mul(aimRotation, new float3(0, 0, 1));
+                                //     var shotOriginPosition = playerGhost.VisualShotOrigin1P.position;
 
-                            //     if (VisualEffectManager.ClientInstance != null)
-                            //     {
-                            //         VisualEffectManager.ClientInstance.SpawnMuzzleFlash(playerGhost, predictedPlayer.ValueRO.EquippedWeaponID, true);
-                            //     }
+                                //     if (VisualEffectManager.ClientInstance != null)
+                                //     {
+                                //         VisualEffectManager.ClientInstance.SpawnMuzzleFlash(playerGhost, predictedPlayer.ValueRO.EquippedWeaponID, true);
+                                //     }
 
-                            //     if (weaponData.Type == WeaponType.Hitscan)
-                            //     {
-                            //         if (Physics.Raycast(eyePosition, aimDirection, out RaycastHit cosmeticHit,
-                            //             weaponData.HitscanRange, s_HitscanLayerMask))
-                            //         {
-                            //             Debug.DrawLine(shotOriginPosition, cosmeticHit.point, Color.yellow, 0.3f);
-                            //         }
-                            //         else
-                            //         {
-                            //             Vector3 endPoint = eyePosition + aimDirection * weaponData.HitscanRange;
-                            //             Debug.DrawLine(shotOriginPosition, endPoint, Color.cyan, 0.3f);
-                            //         }
-                            //     }
-                            //     else if (weaponData.Type == WeaponType.Projectile)
-                            //     {
-                            //         Vector3 targetPoint;
-                            //         if (Physics.Raycast(eyePosition, aimDirection, out RaycastHit aimHit, 1000f, s_ProjectileTargetLayerMask))
-                            //         {
-                            //             targetPoint = aimHit.point;
-                            //         }
-                            //         else
-                            //         {
-                            //             targetPoint = eyePosition + 1000f * aimDirection;
-                            //         }
+                                //     if (weaponData.Type == WeaponType.Hitscan)
+                                //     {
+                                //         if (Physics.Raycast(eyePosition, aimDirection, out RaycastHit cosmeticHit,
+                                //             weaponData.HitscanRange, s_HitscanLayerMask))
+                                //         {
+                                //             Debug.DrawLine(shotOriginPosition, cosmeticHit.point, Color.yellow, 0.3f);
+                                //         }
+                                //         else
+                                //         {
+                                //             Vector3 endPoint = eyePosition + aimDirection * weaponData.HitscanRange;
+                                //             Debug.DrawLine(shotOriginPosition, endPoint, Color.cyan, 0.3f);
+                                //         }
+                                //     }
+                                //     else if (weaponData.Type == WeaponType.Projectile)
+                                //     {
+                                //         Vector3 targetPoint;
+                                //         if (Physics.Raycast(eyePosition, aimDirection, out RaycastHit aimHit, 1000f, s_ProjectileTargetLayerMask))
+                                //         {
+                                //             targetPoint = aimHit.point;
+                                //         }
+                                //         else
+                                //         {
+                                //             targetPoint = eyePosition + 1000f * aimDirection;
+                                //         }
 
-                            //         var directionToTarget = (targetPoint - shotOriginPosition).normalized;
-                            //         var spawnRotation = Quaternion.LookRotation(directionToTarget);
+                                //         var directionToTarget = (targetPoint - shotOriginPosition).normalized;
+                                //         var spawnRotation = Quaternion.LookRotation(directionToTarget);
 
-                            //         controllerLink.Controller.SpawnPredictedProjectile(
-                            //             commandInput.Tick.TickIndexForValidTick,
-                            //             predictedPlayer.ValueRO.EquippedWeaponID,
-                            //             shotOriginPosition,
-                            //             spawnRotation);
-                            //     }
-                            // }
+                                //         controllerLink.Controller.SpawnPredictedProjectile(
+                                //             commandInput.Tick.TickIndexForValidTick,
+                                //             predictedPlayer.ValueRO.EquippedWeaponID,
+                                //             shotOriginPosition,
+                                //             spawnRotation);
+                                //     }
+                                // }
 
-                            FirstPersonController.ProcessInputs(ref predictedPlayer.ValueRW.ControllerState, input, accumulateDT);
+                                FirstPersonController.ProcessInputs(ref predictedPlayer.ValueRW.ControllerState, input, accumulateDT);
                             FirstPersonController.AccumulateMovement(ref predictedPlayer.ValueRW.ControllerState,
                                 ref predictedPlayer.ValueRW.AccumulatedMovement,
                                 input,

@@ -239,6 +239,12 @@ public class GhostGameObject : MonoBehaviour
             EntityManager.AddComponent<GhostGameObjectTransformSync>(linkedGhostEntity);
         }
 
+        if (RequireTransformSync && gameObject.CompareTag("Pickable"))
+        {
+            if (!EntityManager.HasComponent<GhostGameObjectTransformSync>(linkedGhostEntity))
+                EntityManager.AddComponent<GhostGameObjectTransformSync>(linkedGhostEntity);
+        }
+
         if (role == MultiplayerRole.Server)
         {
             var ghostGuid = ReadGhostComponentData<GhostGameObjectGuid>();

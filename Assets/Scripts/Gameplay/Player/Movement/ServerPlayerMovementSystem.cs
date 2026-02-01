@@ -282,151 +282,156 @@ namespace Unity.FPSSample_2
                         WeaponManager.Instance.WeaponRegistry.GetWeaponData(predictedPlayer.ValueRO.EquippedWeaponID);
                     if (weaponData != null)
                     {
-                        bool wantsToReload = commandInput.PlayerInput.Reload;
+                        if (input.PickUp)
+                        {
+                            var playerGhostLink = SystemAPI.ManagedAPI.GetComponent<GhostGameObjectLink>(entity);
+                            playerGhost.TryGrab(playerGhost.CameraTarget.position, playerGhost.CameraTarget.forward, 3f);
+                        }
+                        // bool wantsToReload = commandInput.PlayerInput.Reload;
                         // bool wantsToShoot = commandInput.PlayerInput.Shoot;
                         // bool mustReload = wantsToShoot && predictedPlayer.ValueRO.CurrentAmmo <= 0;
 
-                        // if ((wantsToReload || mustReload) &&
-                        //     !predictedPlayer.ValueRO.ControllerState.IsReloadingState &&
-                        //     predictedPlayer.ValueRO.CurrentAmmo < weaponData.MagazineSize)
-                        // {
-                        //     predictedPlayer.ValueRW.ControllerState.IsReloadingState = true;
-                        //     predictedPlayer.ValueRW.ReloadTimer = weaponData.ReloadTime;
-                        //     predictedPlayer.ValueRW.LastReloadTick = serverTick;
-                        // }
+                            // if ((wantsToReload || mustReload) &&
+                            //     !predictedPlayer.ValueRO.ControllerState.IsReloadingState &&
+                            //     predictedPlayer.ValueRO.CurrentAmmo < weaponData.MagazineSize)
+                            // {
+                            //     predictedPlayer.ValueRW.ControllerState.IsReloadingState = true;
+                            //     predictedPlayer.ValueRW.ReloadTimer = weaponData.ReloadTime;
+                            //     predictedPlayer.ValueRW.LastReloadTick = serverTick;
+                            // }
 
-                        // if (wantsToShoot &&
-                        //     !predictedPlayer.ValueRO.ControllerState.IsReloadingState &&
-                        //     predictedPlayer.ValueRO.CurrentAmmo > 0 &&
-                        //     predictedPlayer.ValueRO.WeaponCooldown >= weaponData.CooldownInMs)
-                        // {
-                        //     predictedPlayer.ValueRW.WeaponCooldown = 0f;
-                        //     predictedPlayer.ValueRW.CurrentAmmo--;
-                        //     predictedPlayer.ValueRW.LastShotTick = serverTick;
+                            // if (wantsToShoot &&
+                            //     !predictedPlayer.ValueRO.ControllerState.IsReloadingState &&
+                            //     predictedPlayer.ValueRO.CurrentAmmo > 0 &&
+                            //     predictedPlayer.ValueRO.WeaponCooldown >= weaponData.CooldownInMs)
+                            // {
+                            //     predictedPlayer.ValueRW.WeaponCooldown = 0f;
+                            //     predictedPlayer.ValueRW.CurrentAmmo--;
+                            //     predictedPlayer.ValueRW.LastShotTick = serverTick;
 
-                        //     var shooterNetworkId = ghostOwnerLookup[entity].NetworkId;
-                        //     var controllerState = predictedPlayer.ValueRO.ControllerState;
-                        //     quaternion aimRotation = quaternion.Euler(
-                        //         math.radians(controllerState.PitchDegrees),
-                        //         math.radians(controllerState.YawDegrees),
-                        //         0f);
+                            //     var shooterNetworkId = ghostOwnerLookup[entity].NetworkId;
+                            //     var controllerState = predictedPlayer.ValueRO.ControllerState;
+                            //     quaternion aimRotation = quaternion.Euler(
+                            //         math.radians(controllerState.PitchDegrees),
+                            //         math.radians(controllerState.YawDegrees),
+                            //         0f);
 
-                        //     float3 eyePosition = playerGhost.CameraTarget.position;
-                        //     float3 aimDirection = math.mul(aimRotation, new float3(0, 0, 1));
-                        //     float3 shotOriginPosition = eyePosition + aimDirection * 0.5f;
+                            //     float3 eyePosition = playerGhost.CameraTarget.position;
+                            //     float3 aimDirection = math.mul(aimRotation, new float3(0, 0, 1));
+                            //     float3 shotOriginPosition = eyePosition + aimDirection * 0.5f;
 
-                        //     if (VisualEffectManager.ServerInstance != null)
-                        //     {
-                        //         VisualEffectManager.ServerInstance.Server_RequestVfx(shooterNetworkId,
-                        //             predictedPlayer.ValueRO.EquippedWeaponID);
-                        //     }
+                            //     if (VisualEffectManager.ServerInstance != null)
+                            //     {
+                            //         VisualEffectManager.ServerInstance.Server_RequestVfx(shooterNetworkId,
+                            //             predictedPlayer.ValueRO.EquippedWeaponID);
+                            //     }
 
-                        //     switch (weaponData.Type)
-                        //     {
-                        //         case WeaponType.Hitscan:
-                        //         {
-                        //             // Use the calculated eyePosition and aimDirection
-                        //             if (UnityEngine.Physics.Raycast(eyePosition, aimDirection, out var hit,
-                        //                     weaponData.HitscanRange,
-                        //                     s_HitscanLayerMask))
-                        //             {
-                        //                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("ServerPlayer"))
-                        //                 {
-                        //                     if (GhostGameObject.TryFindGhostGameObject(hit.collider.gameObject,
-                        //                             out var hitGhostObject) &&
-                        //                         playerGhostLookup.HasComponent(hitGhostObject.LinkedEntity))
-                        //                     {
-                        //                         var targetPredictedPlayer =
-                        //                             playerGhostLookup.GetRefRW(hitGhostObject.LinkedEntity);
-                        //                         var targetNetworkId = ghostOwnerLookup[hitGhostObject.LinkedEntity]
-                        //                             .NetworkId;
+                            //     switch (weaponData.Type)
+                            //     {
+                            //         case WeaponType.Hitscan:
+                            //         {
+                            //             // Use the calculated eyePosition and aimDirection
+                            //             if (UnityEngine.Physics.Raycast(eyePosition, aimDirection, out var hit,
+                            //                     weaponData.HitscanRange,
+                            //                     s_HitscanLayerMask))
+                            //             {
+                            //                 if (hit.collider.gameObject.layer == LayerMask.NameToLayer("ServerPlayer"))
+                            //                 {
+                            //                     if (GhostGameObject.TryFindGhostGameObject(hit.collider.gameObject,
+                            //                             out var hitGhostObject) &&
+                            //                         playerGhostLookup.HasComponent(hitGhostObject.LinkedEntity))
+                            //                     {
+                            //                         var targetPredictedPlayer =
+                            //                             playerGhostLookup.GetRefRW(hitGhostObject.LinkedEntity);
+                            //                         var targetNetworkId = ghostOwnerLookup[hitGhostObject.LinkedEntity]
+                            //                             .NetworkId;
 
-                        //                         if (shooterNetworkId == targetNetworkId)
-                        //                         {
-                        //                             //skip hitting self
-                        //                             continue;
-                        //                         }
+                            //                         if (shooterNetworkId == targetNetworkId)
+                            //                         {
+                            //                             //skip hitting self
+                            //                             continue;
+                            //                         }
 
-                        //                         var healthBeforeDamage = targetPredictedPlayer.ValueRO.CurrentHealth;
-                        //                         targetPredictedPlayer.ValueRW.CurrentHealth -= weaponData.Damage;
-                        //                         targetPredictedPlayer.ValueRW.ControllerState.IsHit = true;
+                            //                         var healthBeforeDamage = targetPredictedPlayer.ValueRO.CurrentHealth;
+                            //                         targetPredictedPlayer.ValueRW.CurrentHealth -= weaponData.Damage;
+                            //                         targetPredictedPlayer.ValueRW.ControllerState.IsHit = true;
 
-                        //                         targetPredictedPlayer.ValueRW.LastDamageAmount = weaponData.Damage;
-                        //                         targetPredictedPlayer.ValueRW.LastHitTick = serverTick;
+                            //                         targetPredictedPlayer.ValueRW.LastDamageAmount = weaponData.Damage;
+                            //                         targetPredictedPlayer.ValueRW.LastHitTick = serverTick;
 
-                        //                         if (healthBeforeDamage > 0 &&
-                        //                             targetPredictedPlayer.ValueRO.CurrentHealth <= 0)
-                        //                         {
-                        //                             if (LeaderboardManager.Instance != null)
-                        //                             {
-                        //                                 LeaderboardManager.Instance.AddKill(shooterNetworkId,
-                        //                                     targetNetworkId);
-                        //                                 Debug.Log(
-                        //                                     $"[Server] Player {shooterNetworkId.ToString()} killed player {targetNetworkId.ToString()}.");
-                        //                             }
-                        //                             else
-                        //                             {
-                        //                                 Debug.LogWarning(
-                        //                                     "[Server] LeaderboardManager instance not found. Cannot add kill.");
-                        //                             }
-                        //                         }
-                        //                     }
-                        //                 }
+                            //                         if (healthBeforeDamage > 0 &&
+                            //                             targetPredictedPlayer.ValueRO.CurrentHealth <= 0)
+                            //                         {
+                            //                             if (LeaderboardManager.Instance != null)
+                            //                             {
+                            //                                 LeaderboardManager.Instance.AddKill(shooterNetworkId,
+                            //                                     targetNetworkId);
+                            //                                 Debug.Log(
+                            //                                     $"[Server] Player {shooterNetworkId.ToString()} killed player {targetNetworkId.ToString()}.");
+                            //                             }
+                            //                             else
+                            //                             {
+                            //                                 Debug.LogWarning(
+                            //                                     "[Server] LeaderboardManager instance not found. Cannot add kill.");
+                            //                             }
+                            //                         }
+                            //                     }
+                            //                 }
 
-                        //                 if (weaponData.ProjectileHitVfxPrefab != null)
-                        //                 {
-                        //                     vfxSpawnList.Add(new VfxSpawnData()
-                        //                     {
-                        //                         Position = hit.point,
-                        //                         Rotation = Quaternion.LookRotation(hit.normal),
-                        //                         Prefab = GhostSpawner.FindGhostPrefabEntity(weaponData
-                        //                             .ProjectileHitVfxPrefab.GhostGuid)
-                        //                     });
-                        //                 }
-                        //             }
+                            //                 if (weaponData.ProjectileHitVfxPrefab != null)
+                            //                 {
+                            //                     vfxSpawnList.Add(new VfxSpawnData()
+                            //                     {
+                            //                         Position = hit.point,
+                            //                         Rotation = Quaternion.LookRotation(hit.normal),
+                            //                         Prefab = GhostSpawner.FindGhostPrefabEntity(weaponData
+                            //                             .ProjectileHitVfxPrefab.GhostGuid)
+                            //                     });
+                            //                 }
+                            //             }
 
-                        //             break;
-                        //         }
-                        //         case WeaponType.Projectile:
-                        //         {
-                        //             var prefabEntity =
-                        //                 GhostSpawner.FindGhostPrefabEntity(weaponData.ProjectileGhostPrefab.GhostGuid);
-                        //             if (prefabEntity != Entity.Null)
-                        //             {
-                        //                 // Determine target point
-                        //                 Vector3 targetPoint;
-                        //                 // Use calculated eyePosition and aimDirection for the raycast
-                        //                 if (UnityEngine.Physics.Raycast(eyePosition, aimDirection,
-                        //                         out RaycastHit aimHit, 1000f,
-                        //                         s_ShootableLayerMask))
-                        //                 {
-                        //                     targetPoint = aimHit.point;
-                        //                 }
-                        //                 else
-                        //                 {
-                        //                     targetPoint = eyePosition + aimDirection * 1000f;
-                        //                 }
+                            //             break;
+                            //         }
+                            //         case WeaponType.Projectile:
+                            //         {
+                            //             var prefabEntity =
+                            //                 GhostSpawner.FindGhostPrefabEntity(weaponData.ProjectileGhostPrefab.GhostGuid);
+                            //             if (prefabEntity != Entity.Null)
+                            //             {
+                            //                 // Determine target point
+                            //                 Vector3 targetPoint;
+                            //                 // Use calculated eyePosition and aimDirection for the raycast
+                            //                 if (UnityEngine.Physics.Raycast(eyePosition, aimDirection,
+                            //                         out RaycastHit aimHit, 1000f,
+                            //                         s_ShootableLayerMask))
+                            //                 {
+                            //                     targetPoint = aimHit.point;
+                            //                 }
+                            //                 else
+                            //                 {
+                            //                     targetPoint = eyePosition + aimDirection * 1000f;
+                            //                 }
 
-                        //                 // Use calculated shotOriginPosition for direction calculation
-                        //                 Vector3 directionToTarget =
-                        //                     (targetPoint - (Vector3)shotOriginPosition).normalized;
-                        //                 Quaternion spawnRotation = Quaternion.LookRotation(directionToTarget);
+                            //                 // Use calculated shotOriginPosition for direction calculation
+                            //                 Vector3 directionToTarget =
+                            //                     (targetPoint - (Vector3)shotOriginPosition).normalized;
+                            //                 Quaternion spawnRotation = Quaternion.LookRotation(directionToTarget);
 
-                        //                 projectileSpawnList.Add(new ProjectileSpawnData
-                        //                 {
-                        //                     Prefab = prefabEntity,
-                        //                     Position = shotOriginPosition,
-                        //                     Rotation = spawnRotation,
-                        //                     OwnerNetworkId = ghostOwnerLookup[entity].NetworkId,
-                        //                     SpawnTick = commandInput.Tick.TickIndexForValidTick,
-                        //                     WeaponId = predictedPlayer.ValueRO.EquippedWeaponID
-                        //                 });
-                        //             }
+                            //                 projectileSpawnList.Add(new ProjectileSpawnData
+                            //                 {
+                            //                     Prefab = prefabEntity,
+                            //                     Position = shotOriginPosition,
+                            //                     Rotation = spawnRotation,
+                            //                     OwnerNetworkId = ghostOwnerLookup[entity].NetworkId,
+                            //                     SpawnTick = commandInput.Tick.TickIndexForValidTick,
+                            //                     WeaponId = predictedPlayer.ValueRO.EquippedWeaponID
+                            //                 });
+                            //             }
 
-                        //             break;
-                        //         }
-                        //     }
-                        // }
+                            //             break;
+                            //         }
+                            //     }
+                            // }
                     }
                 }
             }

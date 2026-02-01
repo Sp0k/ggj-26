@@ -95,51 +95,62 @@ namespace Unity.FPSSample_2
             m_ReticleVector = ReticlePoint.localPosition;
         }
 
-        public void HoldTick(bool holdPressed, Vector3 rayOrigin, Vector3 rayDir, float grabRange, int layerMask)
-        {
-            if (!holdPressed)
-            {
-                if (_heldObjectBody != null) ReleaseHeldObject();
-                return;
-            }
-
-            if (_heldObjectBody == null)
-            {
-                TryGrab(rayOrigin, rayDir, grabRange, layerMask);
-            }
-        }
-
-         void TryGrab(Vector3 rayOrigin, Vector3 rayDir, float grabRange, int layerMask)
+        public void TryGrab(Vector3 rayOrigin, Vector3 rayDir, float grabRange)
         {
             if (HoldPoint == null) return;
 
-            if (UnityEngine.Physics.Raycast(rayOrigin, rayDir, out UnityEngine.RaycastHit hit, grabRange, layerMask))
+            if (_heldObjectBody != null)
             {
-                var rb = hit.rigidbody;
-                if (rb == null) return;
-
-                _heldObjectBody = rb;
-                _heldObjectOriginalParent = rb.transform.parent;
-                _heldObjectKinematic = rb.isKinematic;
-                _heldObjectCdm = rb.collisionDetectionMode;
-
-                if (!rb.CompareTag("Pickable")) return;
-
-                rb.isKinematic = true;
-                rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
-
-                rb.transform.SetParent(HoldPoint, worldPositionStays: true);
-                rb.transform.localPosition = Vector3.zero;
-                rb.transform.localRotation = Quaternion.identity;
+                ReleaseHeldObject();
+                return;
             }
-        }
 
-        private void UpdateHeldTransform()
-        {
-            if (HoldPoint == null || _heldObjectBody == null) return;
+            if (!UnityEngine.Physics.Raycast(rayOrigin, rayDir, out UnityEngine.RaycastHit hit, grabRange))
+                return;
 
-            _heldObjectBody.transform.position = HoldPoint.position;
-            _heldObjectBody.transform.rotation = HoldPoint.rotation;
+            GameObject targetGo = hit.collider.gameObject;
+            targetGo.transform.SetParent(HoldPoint, worldPositionStays: true);
+
+            // var targetGo = hit.rigidbody != null ? hit.rigidbody.gameObject : hit.collider.gameObject;
+
+            // if (!targetGo.CompareTag("Pickable")) return;
+
+            // var rb = targetGo.GetComponent<Rigidbody>();
+            // if (rb == null) return;
+
+            // _heldObjectBody = rb;
+            // _heldObjectOriginalParent = rb.transform.parent;
+            // _heldObjectKinematic = rb.isKinematic;
+            // _heldObjectCdm = rb.collisionDetectionMode;
+
+            // rb.linearVelocity = Vector3.zero;
+            // rb.angularVelocity = Vector3.zero;
+            // rb.isKinematic = true;
+            // rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+            // rb.transform.SetParent(HoldPoint, worldPositionStays: false);
+            // rb.transform.localPosition = Vector3.zero;
+            // rb.transform.localRotation = Quaternion.identity;
+
+            // var rb = hit.rigidbody;
+            // if (rb == null) return;
+
+
+            // _heldObjectBody = rb;
+            // _heldObjectOriginalParent = rb.transform.parent;
+            // _heldObjectKinematic = rb.isKinematic;
+            // _heldObjectCdm = rb.collisionDetectionMode;
+
+            // if (!rb.gameObject.CompareTag("Pickable")) return;
+            // Debug.Log("Picked up " + rb.gameObject.name);
+
+            // rb.isKinematic = true;
+            // rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+
+            // rb.transform.SetParent(HoldPoint, worldPositionStays: true);
+            // rb.transform.localPosition = Vector3.zero;
+            // rb.transform.localRotation = Quaternion.identity;
+
         }
 
         private void ReleaseHeldObject()
@@ -153,7 +164,7 @@ namespace Unity.FPSSample_2
             _heldObjectBody = null;
             _heldObjectOriginalParent = null;
         }
-        
+
         private void LateUpdate()
         {
             // This logic is for visual clients only
