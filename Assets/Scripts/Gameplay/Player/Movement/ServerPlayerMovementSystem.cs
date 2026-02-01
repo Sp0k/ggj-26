@@ -284,8 +284,35 @@ namespace Unity.FPSSample_2
                     {
                         if (input.PickUp)
                         {
-                            var playerGhostLink = SystemAPI.ManagedAPI.GetComponent<GhostGameObjectLink>(entity);
-                            playerGhost.TryGrab(playerGhost.CameraTarget.position, playerGhost.CameraTarget.forward, 3f);
+                            // var playerGhostLink = SystemAPI.ManagedAPI.GetComponent<GhostGameObjectLink>(entity);
+                            // playerGhost.TryGrab(playerGhost.CameraTarget.position, playerGhost.CameraTarget.forward, 3f);
+                            // IMPORTANT: On a dedicated server, CameraTarget.forward may not match the player's aim.
+                            // Use the server-simulated controller state (yaw/pitch) to build the ray.
+                            var controllerState = predictedPlayer.ValueRO.ControllerState;
+                            var aimRot = Quaternion.Euler(controllerState.PitchDegrees, controllerState.YawDegrees, 0f);
+
+                            var rayOrigin = playerGhost.CameraTarget.position; // or playerGhost.ShotOrigin.position
+                            var rayDir = aimRot * Vector3.forward;
+
+                            if (UnityEngine.Physics.Raycast(rayOrigin, rayDir, out var hit, 3f))
+                            {
+                                var hitGO = hit.rigidbody != null ? hit.rigidbody.gameObject : hit.collider.gameObject;
+
+                                if (hitGO.CompareTag("Pickable"))
+                                {
+                                    // Find the root GhostGameObject (walks up parents)
+                                    if (GhostGameObject.TryFindGhostGameObject(hitGO, out var targetGhost))
+                                    {
+                                        // This despawns the ghost on the server, and NetCode propagates it to everyone
+                                        GhostGameObjectUpdateServerSystem.AddGhostForPendingDestroy(targetGhost);
+                                    }
+                                    else
+                                    {
+                                        // Fallback: if it's NOT a ghosted object, this won't replicate automatically
+                                        UnityEngine.Object.Destroy(hitGO);
+                                    }
+                                }
+                            }
                         }
                         // bool wantsToReload = commandInput.PlayerInput.Reload;
                         // bool wantsToShoot = commandInput.PlayerInput.Shoot;

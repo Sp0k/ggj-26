@@ -109,7 +109,8 @@ namespace Unity.FPSSample_2
                 return;
 
             GameObject targetGo = hit.collider.gameObject;
-            targetGo.transform.SetParent(HoldPoint, worldPositionStays: true);
+            // targetGo.transform.SetParent(HoldPoint, worldPositionStays: true);
+            Destroy(targetGo);
 
             // var targetGo = hit.rigidbody != null ? hit.rigidbody.gameObject : hit.collider.gameObject;
 
