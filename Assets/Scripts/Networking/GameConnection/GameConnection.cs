@@ -3,6 +3,7 @@ using Unity.Networking.Transport;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Multiplayer;
+using UnityEngine;
 
 namespace Unity.FPSSample_2
 {
@@ -62,7 +63,6 @@ namespace Unity.FPSSample_2
 
             var networkHandler = new EntityNetworkHandler();
             JoinSessionOptions options = new JoinSessionOptions();
-
 
             options.WithNetworkHandler(networkHandler);
             gameConnection.Session = await MultiplayerService.Instance.JoinSessionByCodeAsync(ConnectionSettings.Instance.SessionCode, options);

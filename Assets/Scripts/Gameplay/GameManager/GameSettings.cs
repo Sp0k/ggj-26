@@ -9,6 +9,7 @@ namespace Unity.FPSSample_2
     public enum GlobalGameState
     {
         MainMenu,
+        Lobby,
         InGame,
         Loading,
     }
@@ -74,6 +75,8 @@ namespace Unity.FPSSample_2
                 Notify(InGameUIPropertyName);
             }
         }
+
+        public bool IsHost = false;
         
         MainMenuState m_MainMenuState;
         public MainMenuState MainMenuState

@@ -1,0 +1,8 @@
+:root {
+	color: white;
+	font-size: 30px;
+}
+
+#host-label, #client-label {
+	padding: 20px;
+}

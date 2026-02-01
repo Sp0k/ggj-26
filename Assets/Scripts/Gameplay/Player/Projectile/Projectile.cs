@@ -39,6 +39,9 @@ namespace Unity.FPSSample_2
 
         private void Update()
         {
+            if (GameSettings.Instance.GameState != GlobalGameState.InGame)
+                return;
+
             if (GhostGameObject == null || !GhostGameObject.IsGhostLinked())
             {
                 var weaponData = WeaponManager.Instance.WeaponRegistry.GetWeaponData(_weaponId);
@@ -62,6 +65,9 @@ namespace Unity.FPSSample_2
 
         public void UpdateServer(float deltaTime)
         {
+            if (GameSettings.Instance.GameState != GlobalGameState.InGame)
+                return;
+
             var weaponData = WeaponManager.Instance.WeaponRegistry.GetWeaponData(_weaponId);
             Move(deltaTime, weaponData.ProjectileSpeed);
 
