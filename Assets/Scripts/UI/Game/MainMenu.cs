@@ -22,8 +22,6 @@ namespace Unity.FPSSample_2.Client
         }
 
         VisualElement m_MainMenu;
-        RadioButtonGroup m_ChosseCharacterGroup;
-        RadioButtonGroup m_ConnectionModeGroup;
         Label m_SessionNameLabel;
         TextField m_SessionNameField;
         Button m_CreateGameButton;
@@ -50,23 +48,7 @@ namespace Unity.FPSSample_2.Client
                 bindingMode = BindingMode.TwoWay,
             });
 
-            m_ChosseCharacterGroup = m_MainMenu.Q<RadioButtonGroup>(UIElementNames.ChooseCharacterOption);
-            m_ChosseCharacterGroup.SetBinding("value", new DataBinding
-            {
-                dataSource = GameSettings.Instance,
-                dataSourcePath = new PropertyPath(nameof(GameSettings.PlayerCharacter)),
-                bindingMode = BindingMode.TwoWay,
-            });
-            
             m_SessionNameLabel = m_MainMenu.Q<Label>(UIElementNames.SessionNameLabel);
-            var connectionMode = m_ConnectionModeGroup = m_MainMenu.Q<RadioButtonGroup>(UIElementNames.ConnectionModeOption);
-            connectionMode.SetBinding("value", new DataBinding
-            {
-                dataSource = GameSettings.Instance,
-                dataSourcePath = new PropertyPath(nameof(GameSettings.ConnectionMode)),
-                bindingMode = BindingMode.TwoWay,
-            });
-            m_ConnectionModeGroup.RegisterValueChangedCallback(OnConnectionModeChanged);
 
             var sessionInputField = m_SessionNameField = m_MainMenu.Q<TextField>(UIElementNames.SessionInputField);
             sessionInputField.SetBinding("value", new DataBinding
@@ -102,7 +84,6 @@ namespace Unity.FPSSample_2.Client
         void OnDisable()
         {
             m_CreateGameButton.clicked -= OnCreateGamePressed;
-            m_ConnectionModeGroup.UnregisterValueChangedCallback(OnConnectionModeChanged);
             m_ConnectToServerButton.clicked -= OnConnectToServerPressed;
             m_QuitButton.clicked -= OnQuitPressed;
         }
